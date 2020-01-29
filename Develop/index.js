@@ -53,7 +53,7 @@ const colors = {
 };
 
 
-function generateHTML(data) {
+function generateHTML(data, repoNames) {
     return `<!DOCTYPE html>
     <html lang="en">
     
@@ -71,7 +71,7 @@ function generateHTML(data) {
     
                 <div class="photo-header">
                     <h1>Hi! My name is usernameVar</h1>
-                    <h2></h2>
+                    <h2>"$"{repoNames.length}</h2>
                 </div>
     
                 <div class="links-nav">
@@ -238,16 +238,30 @@ async function init() {
         const queryUrl = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
         // const queryUrl = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
 
-        axios
-            .get(queryUrl)
+        function axiosRun() {
+            var strr = []
+            axios.get(queryUrl)
             .then(function (res) {
+                // return res.data
                 const repoNames = res.data.map(function (repo) {
                     return repo.name;
                   });
-                console.log(res);
-                console.log(`Saved ${repoNames.length} repos`);
+                // console.log(res);
+                // console.log(`Saved ${repoNames.length} repos`);
+
+                return repoNames
+                
             });
-        
+            strr.push(repoNames);
+
+            console.log(strr)
+            return strr
+        }
+        axiosRun();
+        // axiosRun().then(data => {
+        //     response.json({ message: "request received", data })
+        // })
+        // console.log(strr)
 
         const indexFile = generateHTML(answers)
 
