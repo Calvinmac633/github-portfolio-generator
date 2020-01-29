@@ -8,7 +8,7 @@ const writeFileAsync = util.promisify(fs.writeFile);
 function promptUser() {
     return inquirer.prompt([{
         type: "input",
-        name: "name",
+        name: "username",
         message: "What is your github username?"
     },
     {
@@ -22,27 +22,28 @@ function promptUser() {
             "pink"
         ]
     }])
+    .then(function ({ username }) {
+        const queryUrl = `https://api.github.com/users/${username}/repos?per_page=100`;
+    
+        axios.get(queryUrl).then(function (res) {
+            const repoNames = res.data.map(function (repo) {
+                return repo.name;
+            });
+    
+            const repoNamesStr = repoNames.join("\n");
+    
+            fs.writeFile("repos.txt", repoNamesStr, function (err) {
+                if (err) {
+                    throw err;
+                }
+    
+                console.log(`Saved ${repoNames.length} repos`);
+            });
+        });
+    });
 }
 
-// .then(function ({ username }) {
-//     const queryUrl = `https://api.github.com/users/${username}/repos?per_page=100`;
 
-//     axios.get(queryUrl).then(function (res) {
-//         const repoNames = res.data.map(function (repo) {
-//             return repo.name;
-//         });
-
-//         const repoNamesStr = repoNames.join("\n");
-
-//         fs.writeFile("repos.txt", repoNamesStr, function (err) {
-//             if (err) {
-//                 throw err;
-//             }
-
-//             console.log(`Saved ${repoNames.length} repos`);
-//         });
-//     });
-// });
 const colors = {
     green: {
       wrapperBackground: "#E6E1C3",
@@ -251,7 +252,7 @@ async function init() {
     try {
         const answers = await promptUser();
 
-        console.log(answers.name)
+        console.log(answers.username)
         console.log(answers.color.toString())
         
         const indexFile = generateHTML(answers)
