@@ -70,8 +70,8 @@ function generateHTML(data, repoNames) {
             <div class="wrapper">
     
                 <div class="photo-header">
-                    <h1>Hi! My name is usernameVar</h1>
-                    <h2>"$"{repoNames.length}</h2>
+                    <h1>Hi! My name is ${data.username}</h1>
+                    <h2>${data.repoNum}</h2>
                 </div>
     
                 <div class="links-nav">
@@ -227,43 +227,39 @@ function generateHTML(data, repoNames) {
         </style>`
 }
 
-
+function CreateUser(username, color, repoNum) {
+    this.username = username;
+    this.color = color;
+    this.repoNum = repoNum;
+}
 async function init() {
 
     try {
         const answers = await promptUser();
-        console.log(answers.username)
-        console.log(answers.color.toString())
 
         const queryUrl = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
-        // const queryUrl = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
 
-        function axiosRun() {
-            var strr = []
-            axios.get(queryUrl)
-            .then(function (res) {
-                // return res.data
-                const repoNames = res.data.map(function (repo) {
-                    return repo.name;
-                  });
-                // console.log(res);
-                // console.log(`Saved ${repoNames.length} repos`);
+        async function axiosTest() {
+            try {
+                const response = await axios.get(queryUrl);
+                // console.log(response.headers.date);
+                responseDate = response.headers.date
+                return responseDate
+              } catch (error) {
+                console.error(error);
+              }
+            }
+            axiosTest();
+            console.log(axiosTest())
+            let axiosResponse = await axiosTest();
+            console.log(axiosResponse)
 
-                return repoNames
-                
-            });
-            strr.push(repoNames);
+        
+        const newUser = new CreateUser(answers.username, answers.color.toString(), axiosResponse)
+        console.log(newUser)
+        console.log(answers)
 
-            console.log(strr)
-            return strr
-        }
-        axiosRun();
-        // axiosRun().then(data => {
-        //     response.json({ message: "request received", data })
-        // })
-        // console.log(strr)
-
-        const indexFile = generateHTML(answers)
+        const indexFile = generateHTML(newUser)
 
 
         await writeFileAsync("github-index.html", indexFile);
