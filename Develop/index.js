@@ -53,7 +53,7 @@ const colors = {
 };
 
 
-function generateHTML(data, repoNames) {
+function generateHTML(data) {
     return `<!DOCTYPE html>
     <html lang="en">
     
@@ -70,6 +70,7 @@ function generateHTML(data, repoNames) {
             <div class="wrapper">
     
                 <div class="photo-header">
+                <img src="${data.imgUrl}.png" alt="Profile" height="50" width="50">
                     <h1>Hi! My name is ${data.username}</h1>
                     <h2>${data.repoNum}</h2>
                 </div>
@@ -80,13 +81,37 @@ function generateHTML(data, repoNames) {
                     </div>
                 </div>
             </div>
+
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <div class="card"></div>
+                        <div class="card">Number of Public Repos: ${data.repoNum}</div>
+                    </div>
+                    <div class="col">
+                        <div class="card">Number of Public Repos: ${data.followers}</div>
                     </div>
                 </div>
             </div>
+
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="card">Number of Followers: ${data.follower}</div>
+                    </div>
+                    <div class="col">
+                        <div class="card">Number of Following: ${data.following}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="card">Number of Followers: ${data.followers}</div>
+                </div>
+            </div>
+        </div>
+
         </div>
     </body>
         <style>
@@ -227,37 +252,127 @@ function generateHTML(data, repoNames) {
         </style>`
 }
 
-function CreateUser(username, color, repoNum) {
+function CreateUser(username, color, repoNum, imgUrl, location, followers, following) {
     this.username = username;
     this.color = color;
     this.repoNum = repoNum;
+    this.imgUrl = imgUrl;
+    this.location = location;
+    this.followers = followers;
+    this.following = following;
 }
 async function init() {
 
     try {
         const answers = await promptUser();
 
-        const queryUrl = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
+        const queryUrlRepo = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
 
-        async function axiosTest() {
+        async function axiosRepos() {
             try {
-                const response = await axios.get(queryUrl);
-                // console.log(response.headers.date);
-                responseDate = response.headers.date
-                return responseDate
-              } catch (error) {
-                console.error(error);
-              }
-            }
-            axiosTest();
-            console.log(axiosTest())
-            let axiosResponse = await axiosTest();
-            console.log(axiosResponse)
+                const response = await axios.get(queryUrlRepo);
+                const repoNames = response.data.map(function (repo) {
+                    return repo.name;
+                });
+                console.log(`Saved ${repoNames.length} repos`);
+                // console.log(response.data[0].id)
 
-        
-        const newUser = new CreateUser(answers.username, answers.color.toString(), axiosResponse)
-        console.log(newUser)
-        console.log(answers)
+                return repoNames.length
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        axiosRepos();
+        let axiosResponseRepos = await axiosRepos();
+
+        const queryUrlImg = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
+
+        async function axiosImg() {
+            try {
+                const response = await axios.get(queryUrlImg);
+                console.log(response.data[0].owner.avatar_url)
+                const imgTag = (response.data[0].owner.avatar_url)
+                return imgTag
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        axiosImg();
+        let axiosResponseImg = await axiosImg();
+
+        const queryUrlLoc = `https://api.github.com/users/${answers.username}`;
+
+        async function axiosLoc() {
+            try {
+                const response = await axios.get(queryUrlLoc);
+                const locTag = (response.data.location)
+                return locTag
+                const followersTag = response.data[0].followers
+                const followingTag = response.data[0].following
+                const companyTag = response.data[0].company
+                return followersTag
+                return followingTag
+                return companyTag
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        axiosLoc();
+        let axiosResponseLoc = await axiosLoc();
+
+
+
+        const queryUrlFollowers = `https://api.github.com/users/${answers.username}`;
+
+        async function axiosFollowers() {
+            try {
+                const response = await axios.get(queryUrlFollowers);
+                // console.log(response.data)
+                const followersTag = response.data.followers
+                return followersTag
+                const followingTag = response.data[0].following
+                const companyTag = response.data[0].company
+                return followingTag
+                return companyTag
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        axiosFollowers();
+        let axiosResponseFollowers = await axiosFollowers();
+
+
+
+        const queryUrlFollowing = `https://api.github.com/users/${answers.username}`;
+
+        async function axiosFollowing() {
+            try {
+                const response = await axios.get(queryUrlFollowing);
+                // console.log(response.data)
+                const followingTag = response.data.following
+                return followingTag
+                const companyTag = response.data.company
+                return companyTag
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        axiosFollowing();
+        let axiosResponseFollowing = await axiosFollowing();
+
+
+        const newUser = new CreateUser(
+            answers.username, 
+            answers.color.toString(), 
+            axiosResponseRepos, 
+            axiosResponseImg, 
+            axiosResponseLoc,
+            axiosResponseFollowers,
+            axiosResponseFollowing,
+
+            )
+        // console.log(newUser)
+        // console.log(answers)
 
         const indexFile = generateHTML(newUser)
 
