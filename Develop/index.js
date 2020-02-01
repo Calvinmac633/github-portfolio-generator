@@ -2,7 +2,7 @@ const fs = require("fs");
 const axios = require("axios");
 const inquirer = require("inquirer");
 const util = require('util');
-// const puppeteer = require("puppeteer")
+const puppeteer = require("puppeteer")
 
 const writeFileAsync = util.promisify(fs.writeFile);
 
@@ -347,7 +347,7 @@ async function init() {
 
         let answersProf = await axiosProf();
 
-       console.log(answersProf)
+        console.log(answersProf)
 
         let axiosResponseLoc = answersProf[0];
         let axiosResponseFollowers = answersProf[1];
@@ -387,7 +387,7 @@ async function init() {
 
         let answersStars = await axiosStars();
 
-       console.log(answersStars)
+        console.log(answersStars)
 
 
 
@@ -405,10 +405,10 @@ async function init() {
 
 
         const newUser = new CreateUser(
-            answers.username, 
-            answers.color.toString(), 
-            axiosResponseRepos, 
-            axiosResponseImg, 
+            answers.username,
+            answers.color.toString(),
+            axiosResponseRepos,
+            axiosResponseImg,
             axiosResponseLoc,
             axiosResponseFollowers,
             axiosResponseFollowing,
@@ -417,18 +417,22 @@ async function init() {
             axiosResponseGithub,
             axiosResponseBlog,
             axiosResponseBio
-            )
+        )
         // console.log(newUser)
         // console.log(answers)
 
         const indexFile = await generateHTML(newUser)
 
-        // await indexFile.emulateMedia("screen");
-        // await indexFile.pdf({
-        //     path: "Page.pdf",
-        //     format: "A4",
-        //     printBackground: true
-        // });
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+
+        await page.setContent(indexFile)
+        await page.emulateMedia("screen");
+        await page.pdf({
+            path: "Page.pdf",
+            format: "A4",
+            printBackground: true
+        });
 
         await writeFileAsync("github-index.html", indexFile);
 
