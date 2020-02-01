@@ -2,6 +2,7 @@ const fs = require("fs");
 const axios = require("axios");
 const inquirer = require("inquirer");
 const util = require('util');
+// const puppeteer = require("puppeteer")
 
 const writeFileAsync = util.promisify(fs.writeFile);
 
@@ -420,8 +421,14 @@ async function init() {
         // console.log(newUser)
         // console.log(answers)
 
-        const indexFile = generateHTML(newUser)
+        const indexFile = await generateHTML(newUser)
 
+        // await indexFile.emulateMedia("screen");
+        // await indexFile.pdf({
+        //     path: "Page.pdf",
+        //     format: "A4",
+        //     printBackground: true
+        // });
 
         await writeFileAsync("github-index.html", indexFile);
 
