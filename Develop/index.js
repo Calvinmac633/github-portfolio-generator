@@ -64,6 +64,7 @@ function generateHTML(data) {
         <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" />
         <link href="https://fonts.googleapis.com/css?family=BioRhyme|Cabin&display=swap" rel="stylesheet">
         <title>Document</title>
+        <link rel="stylesheet" href="style.css">
     
     <body>
         <div class="main">
@@ -71,14 +72,18 @@ function generateHTML(data) {
     
                 <div class="photo-header">
                 <img src="${data.imgUrl}.png" alt="Profile" height="50" width="50">
-                    <h1>Hi! My name is ${data.username}</h1>
-                    <h2>${data.repoNum}</h2>
+                    <h1>Hi I'm ${data.name}, welcome to my page!</h1>
+                    <h2>${data.location}</h2>
                 </div>
     
                 <div class="links-nav">
                     <div class="nav-link">
-                        <a></a>
+                    <br>
+                    <br>
+                    <button target="_blank" onclick="window.location.href = '${data.github}';">Go to Github Page</button>
+                    <button target="_blank" onclick="window.location.href = '${data.blog}';">Go to Blog</button>
                     </div>
+                    <p>${data.bio}</p>
                 </div>
             </div>
 
@@ -88,7 +93,7 @@ function generateHTML(data) {
                         <div class="card">Number of Public Repos: ${data.repoNum}</div>
                     </div>
                     <div class="col">
-                        <div class="card">Number of Public Repos: ${data.followers}</div>
+                        <div class="card">Currently working at: ${data.company}</div>
                     </div>
                 </div>
             </div>
@@ -96,7 +101,7 @@ function generateHTML(data) {
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <div class="card">Number of Followers: ${data.follower}</div>
+                        <div class="card">Number of Followers: ${data.followers}</div>
                     </div>
                     <div class="col">
                         <div class="card">Number of Following: ${data.following}</div>
@@ -107,7 +112,7 @@ function generateHTML(data) {
             <div class="container">
             <div class="row">
                 <div class="col">
-                    <div class="card">Number of Followers: ${data.followers}</div>
+                    <div class="card"></div>
                 </div>
             </div>
         </div>
@@ -252,7 +257,7 @@ function generateHTML(data) {
         </style>`
 }
 
-function CreateUser(username, color, repoNum, imgUrl, location, followers, following) {
+function CreateUser(username, color, repoNum, imgUrl, location, followers, following, company, name, github, blog, bio) {
     this.username = username;
     this.color = color;
     this.repoNum = repoNum;
@@ -260,12 +265,17 @@ function CreateUser(username, color, repoNum, imgUrl, location, followers, follo
     this.location = location;
     this.followers = followers;
     this.following = following;
+    this.company = company;
+    this.name = name;
+    this.github = github;
+    this.blog = blog;
+    this.bio = bio;
 }
+
 async function init() {
 
     try {
         const answers = await promptUser();
-
         const queryUrlRepo = `https://api.github.com/users/${answers.username}/repos?per_page=100`;
 
         async function axiosRepos() {
@@ -275,8 +285,7 @@ async function init() {
                     return repo.name;
                 });
                 console.log(`Saved ${repoNames.length} repos`);
-                // console.log(response.data[0].id)
-
+                // console.log(response.data)
                 return repoNames.length
             } catch (error) {
                 console.error(error);
@@ -300,65 +309,98 @@ async function init() {
         axiosImg();
         let axiosResponseImg = await axiosImg();
 
-        const queryUrlLoc = `https://api.github.com/users/${answers.username}`;
 
-        async function axiosLoc() {
+
+
+
+        const queryUrlProfile = `https://api.github.com/users/${answers.username}`;
+
+        async function axiosProf() {
+
             try {
-                const response = await axios.get(queryUrlLoc);
-                const locTag = (response.data.location)
-                return locTag
-                const followersTag = response.data[0].followers
-                const followingTag = response.data[0].following
-                const companyTag = response.data[0].company
-                return followersTag
-                return followingTag
-                return companyTag
-            } catch (error) {
-                console.error(error);
-            }
-        }
-        axiosLoc();
-        let axiosResponseLoc = await axiosLoc();
 
-
-
-        const queryUrlFollowers = `https://api.github.com/users/${answers.username}`;
-
-        async function axiosFollowers() {
-            try {
-                const response = await axios.get(queryUrlFollowers);
+                const response = await axios.get(queryUrlProfile);
+                const locTag = response.data.location;
+                const followersTag = response.data.followers;
+                const followingTag = response.data.following;
+                const companyTag = response.data.company;
+                const name = response.data.name;
+                const github = response.data.html_url;
+                const blog = response.data.blog;
+                const bio = response.data.bio;
                 // console.log(response.data)
-                const followersTag = response.data.followers
-                return followersTag
-                const followingTag = response.data[0].following
-                const companyTag = response.data[0].company
-                return followingTag
-                return companyTag
+                const answersArray = [locTag, followersTag, followingTag, companyTag, name, github, blog, bio];
+
+                return answersArray;
+
             } catch (error) {
+
                 console.error(error);
+
             }
+
         }
-        axiosFollowers();
-        let axiosResponseFollowers = await axiosFollowers();
+
+
+        axiosProf();
+
+        let answersProf = await axiosProf();
+
+       console.log(answersProf)
+
+        let axiosResponseLoc = answersProf[0];
+        let axiosResponseFollowers = answersProf[1];
+        let axiosResponseFollowing = answersProf[2];
+        let axiosResponseCompany = answersProf[3];
+        let axiosResponseName = answersProf[4];
+        let axiosResponseGithub = answersProf[5];
+        let axiosResponseBlog = answersProf[6];
+        let axiosResponseBio = answersProf[7];
 
 
 
-        const queryUrlFollowing = `https://api.github.com/users/${answers.username}`;
+        const queryUrlStars = `https://api.github.com/users/${answers.username}/starred`;
+        // {/owner}{/repo}
 
-        async function axiosFollowing() {
+        async function axiosStars() {
+
             try {
-                const response = await axios.get(queryUrlFollowing);
-                // console.log(response.data)
-                const followingTag = response.data.following
-                return followingTag
-                const companyTag = response.data.company
-                return companyTag
+
+                const response = await axios.get(queryUrlStars);
+                // const locTag = response.data.location;
+                console.log(response.data)
+                // const starsArray = [locTag];
+
+                // return starsArray;
+
             } catch (error) {
+
                 console.error(error);
+
             }
+
         }
-        axiosFollowing();
-        let axiosResponseFollowing = await axiosFollowing();
+
+
+        axiosStars();
+
+        let answersStars = await axiosStars();
+
+       console.log(answersStars)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         const newUser = new CreateUser(
@@ -369,7 +411,11 @@ async function init() {
             axiosResponseLoc,
             axiosResponseFollowers,
             axiosResponseFollowing,
-
+            axiosResponseCompany,
+            axiosResponseName,
+            axiosResponseGithub,
+            axiosResponseBlog,
+            axiosResponseBio
             )
         // console.log(newUser)
         // console.log(answers)
